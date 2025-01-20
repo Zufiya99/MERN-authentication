@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel.js";
+import transporter from "../config/nodemailer.js";
 
 const userRegister = async (req, res) => {
   const { name, email, password } = req.body;
@@ -17,9 +18,6 @@ const userRegister = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new userModel({ name, email, password: hashedPassword });
     await user.save();
-    res
-      .status(201)
-      .json({ success: true, message: "User registered successfully" });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: "1d",
@@ -31,6 +29,30 @@ const userRegister = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", // Prevents cross-site usage
       maxAge: 24 * 60 * 60 * 1000,
     });
+
+    // Sending welcome mails
+    const mailOptions = {
+      from: process.env.SENDER_EMAIL,
+      to: email,
+      subject: "Welcome to our platform",
+      html: `
+        <p>Hi ${name},</p>
+        <b>Your account has been created successfully with the mail id: ${email}.</b>
+        <p>Welcome to our platform. We are glad to have you here.</p>
+        `,
+    };
+
+    // await transporter.sendMail(mailOptions);
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log("Welcome email sent successfully");
+    } catch (error) {
+      console.error("Error sending welcome email:", error.message);
+    }
+
+    return res
+      .status(201)
+      .json({ success: true, message: "User registered successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
