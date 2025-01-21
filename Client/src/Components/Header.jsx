@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
+import { AppContext } from "../Context/AppContext";
 import { assets } from "../assets/assets";
 
 const Header = () => {
+  const { userData } = useContext(AppContext);
   return (
     <div className="flex flex-col items-center mt-24 px-6 sm:px-20 text-center text-gray-700 space-y-4">
       <img
@@ -10,7 +12,7 @@ const Header = () => {
         className="w-28 h-28 sm:w-36 sm:h-36 rounded-full shadow-lg mb-4"
       />
       <h1 className="text-2xl sm:text-3xl font-semibold">
-        Hey developer!{" "}
+        {userData ? `Hey ${userData.name}` : "Hey Developer!"}!{" "}
         <img
           className="w-8 inline-block"
           src={assets.hand_wave}
@@ -24,7 +26,9 @@ const Header = () => {
         Let's start with a quick product tour, and we will have you up and
         running in no time!
       </p>
-      <button className="border border-gray-500 rounded-full px-8 py-2.5 hover:bg-gray-700 hover:text-white transition duration-300">Get Started!</button>
+      <button className="border border-gray-500 rounded-full px-8 py-2.5 hover:bg-gray-700 hover:text-white transition duration-300">
+        Get Started!
+      </button>
     </div>
   );
 };

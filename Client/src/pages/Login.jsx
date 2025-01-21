@@ -8,7 +8,7 @@ import axios from "axios";
 const Login = () => {
   const navigate = useNavigate();
 
-  const { backendUrl, setIsLoggedIn } = useContext(AppContext);
+  const { backendUrl, setIsLoggedIn, getUserData } = useContext(AppContext);
 
   const [state, setState] = useState("Sign Up");
   const [name, setName] = useState("");
@@ -16,8 +16,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
 
   const onSubmitHandler = async (e) => {
-    e.preventDefault();
     try {
+      e.preventDefault();
       axios.defaults.withCredentials = true; // Include cookies in requests
       if (state == "Sign Up") {
         const { data } = await axios.post(backendUrl + "/api/auth/register", {
@@ -28,6 +28,7 @@ const Login = () => {
         if (data.success) {
           setIsLoggedIn(true);
           toast.success("Registration successful! Welcome to the platform.");
+          getUserData();
           navigate("/");
         } else {
           toast.error(data.message);
@@ -40,6 +41,7 @@ const Login = () => {
         if (data.success) {
           setIsLoggedIn(true);
           toast.success("Login successful! Welcome back.");
+          getUserData();
           navigate("/");
         } else {
           toast.error(data.message);
