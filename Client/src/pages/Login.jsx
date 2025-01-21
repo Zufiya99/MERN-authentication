@@ -1,13 +1,58 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { assets } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { AppContext } from "../Context/AppContext";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
+
+  const { backendUrl, setIsLoggedIn } = useContext(AppContext);
+
   const [state, setState] = useState("Sign Up");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
+    try {
+      axios.defaults.withCredentials = true; // Include cookies in requests
+      if (state == "Sign Up") {
+        const { data } = await axios.post(backendUrl + "/api/auth/register", {
+          name,
+          email,
+          password,
+        });
+        if (data.success) {
+          setIsLoggedIn(true);
+          toast.success("Registration successful! Welcome to the platform.");
+          navigate("/");
+        } else {
+          toast.error(data.message);
+        }
+      } else {
+        const { data } = await axios.post(backendUrl + "/api/auth/login", {
+          email,
+          password,
+        });
+        if (data.success) {
+          setIsLoggedIn(true);
+          toast.success("Login successful! Welcome back.");
+          navigate("/");
+        } else {
+          toast.error(data.message);
+        }
+      }
+    } catch (error) {
+      // Handle error messages
+      const errorMessage =
+        error.response?.data?.message || "An unexpected error occurred.";
+      toast.error(errorMessage);
+      console.error("Error:", errorMessage); // For debugging
+    }
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300">
@@ -35,7 +80,7 @@ const Login = () => {
         </div>
 
         {/* Form */}
-        <form action="" className="space-y-4">
+        <form onSubmit={onSubmitHandler} className="space-y-4">
           {/* Full Name */}
           {state === "Sign Up" && (
             <div className="relative">
